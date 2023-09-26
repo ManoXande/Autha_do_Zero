@@ -1,0 +1,2 @@
+git config --global user.email "cao.agrimensura@gmail.com"
+git config --global user.name "ManoXande"

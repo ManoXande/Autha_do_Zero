@@ -1,25 +1,17 @@
+#debug_logs.py
 import logging
-from configurations import get_logging_level
+import sys
 
 def setup_custom_logger(name):
     formatter = logging.Formatter(fmt='%(asctime)s - %(levelname)s - %(module)s - %(message)s')
-    
-    handler = logging.StreamHandler()
+    handler = logging.StreamHandler(sys.stdout)  # Aqui você usa sys.stdout
     handler.setFormatter(formatter)
-    
     logger = logging.getLogger(name)
-    
-    log_level = get_logging_level()  # Getting the logging level from configurations
-
-    if log_level == "DEBUG":  # Check if the log level is set to DEBUG
-        logger.setLevel(logging.DEBUG)
-    elif log_level == "INFO":  # Check if the log level is set to INFO
-        logger.setLevel(logging.INFO)
-    else:
-        logger.setLevel(logging.WARNING)  # Default to WARNING if none match
-    
+    logger.setLevel(logging.DEBUG)
     logger.addHandler(handler)
     return logger
+
+log = setup_custom_logger('my_logger')
 
 # Example Usage
 if __name__ == "__main__":
@@ -28,3 +20,4 @@ if __name__ == "__main__":
     logger.info("This is an info message")
     logger.warning("This is a warning message")
     logger.error("This is an error message")
+

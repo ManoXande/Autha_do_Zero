@@ -1,3 +1,4 @@
+#configurations.py
 import locale
 
 # Logging settings
@@ -42,7 +43,7 @@ def set_locale(region="pt_BR"):
 
 def set_coordinate_system(epsg_code):
     """Set the EPSG code for the coordinate system (implementation needed)"""
-    pass
+    return 
 
 def set_debug_mode(active=False):
     """Turn debug mode on or off (implementation needed)"""
@@ -58,4 +59,6 @@ def log(message):
     if LOG_TO_TERMINAL:
         print(message)
 
-
+def get_logging_level():
+    # Implementação da função
+    pass

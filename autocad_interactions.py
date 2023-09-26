@@ -1,46 +1,84 @@
-from pyautocad import Autocad, APoint  # Assuming you're using pyautocad
-from class_definitions import Vertex, Polygon, Text, Cogopoint
-from debug_logs import log
-from common_utils import custom_round, calculate_distance, calculate_azimuth
+#autocad_interactions.py
+from pyautocad import Autocad  # Assumindo que 'Autocad' é do pacote pyautocad
+from class_definitions import Cogopoint, Polygon, Text, Vertex  # Assumindo que estas classes estão definidas em 'class_definitions.py'
 
 acad = Autocad()
 
-def read_polylines():
-    polylines = []
-    for entity in acad.iter_objects('Polyline'):
-        vertices = []
-        is_closed = entity.is_closed  # Verifica se a polilinha é fechada
-        for i in range(entity.Count):
-            point = entity.GetPoint(i)
-            vertex = Vertex(point.x, point.y, point.z)
-            vertices.append(vertex)
-        polygon = Polygon(vertices, is_closed=is_closed)
-        polylines.append(polygon)
-    log(f"{len(polylines)} polylines read from AutoCAD.")
-    return polylines
+def initialize_selection_set():
+    selectionSetName = 'SS1'
+    selection_set = None
 
-def associate_cogopoints_to_vertices(vertices, cogopoints):
-    # Esboço da função para associar COGO Points aos vértices
-    pass
+    for i in range(acad.ActiveDocument.SelectionSets.Count):
+        if acad.ActiveDocument.SelectionSets.Item(i).Name == selectionSetName:
+            selection_set = acad.ActiveDocument.SelectionSets.Item(i)
+            break
 
-def read_texts():
-    texts = []
-    # Sample code to read text and mtext from AutoCAD using pyautocad
-    for entity in acad.iter_objects(['Text', 'MText']):
-        point = APoint(entity.InsertionPoint)
-        text = Text(point.x, point.y, entity.TextString)
-        texts.append(text)
-    log(f"{len(texts)} texts read from AutoCAD.")
-    return texts
+    if selection_set is None:
+        selection_set = acad.ActiveDocument.SelectionSets.Add(selectionSetName)
+    else:
+        selection_set.Clear()
 
-def read_cogopoints():
-    cogopoints = []
-    for entity in acad.iter_objects('Point'):
-        point_number = entity.GetAttribute("PointNumber")
-        description = entity.GetAttribute("Description")
-        cogopoint = Cogopoint(entity.x, entity.y, entity.z, point_number, description)
-        cogopoints.append(cogopoint)
-    log(f"{len(cogopoints)} COGO Points read from AutoCAD.")
-    return cogopoints
+    selection_set.SelectOnScreen()
+    return selection_set
 
-# Additional functions like write_to_autocad() can be added here as well.
+def read_entities_from_selection_set(selection_set):
+    entities = []
+    try:
+        for entity in selection_set:
+            entity_data = extract_coordinates(entity)
+            if entity_data:
+                if entity_data['Type'] == 'Polyline':
+                    entities.append(convert_polyline(entity_data))
+                elif entity_data['Type'] == 'CogoPoint':
+                    entities.append(convert_cogopoint(entity_data))
+                elif entity_data['Type'] == 'Text':
+                    entities.append(convert_text(entity_data))
+        return entities
+    except Exception as e:
+        print(f"An error occurred while fetching entities: {e}")
+        return []
+
+def extract_coordinates(entity):
+    try:
+        entity_name = entity.EntityName
+        if entity_name == 'AcDbPolyline':
+            coords = [round(coord, 3) for coord in entity.Coordinates]
+            vertices_groups = [(coords[i], coords[i + 1]) for i in range(0, len(coords), 2)]
+            return {'Type': 'Polyline', 'Coordinates': vertices_groups}
+        elif entity_name == 'AeccDbCogoPoint':
+            properties = ['Easting', 'Northing', 'Elevation', 'RawDescription', 'Number']
+            extracted_properties = {prop: round(float(getattr(entity, prop)), 3) if isinstance(getattr(entity, prop), float) else getattr(entity, prop) for prop in properties}
+            return {'Type': 'CogoPoint', **extracted_properties}
+        elif entity_name == 'AcDbText' or entity_name == 'AcDbMText':
+            properties = ['InsertionPoint', 'TextString']
+            extracted_properties = {prop: getattr(entity, prop) for prop in properties}
+            extracted_properties['InsertionPoint'] = tuple(round(coord, 3) for coord in extracted_properties['InsertionPoint'][:2])
+            return {'Type': 'Text', **extracted_properties}
+        else:
+            return None
+    except Exception as e:
+        print(f"Exception caught: {e}")  # Debugging line
+        raise e
+
+def convert_polyline(data):
+    vertices = [Vertex(x, y) for x, y in data['Coordinates']]
+    return Polygon(vertices)
+
+def convert_cogopoint(data):
+    return Cogopoint(data['Easting'], data['Northing'], data['Elevation'], data['Number'], data['RawDescription'])
+
+def convert_text(data):
+    x, y = data['InsertionPoint']
+    return Text(x, y, data['TextString'])
+
+def fetch_polygons():
+    selection_set = initialize_selection_set()
+    return [entity for entity in read_entities_from_selection_set(selection_set) if isinstance(entity, Polygon)]
+
+def fetch_cogopoints():
+    selection_set = initialize_selection_set()
+    return [entity for entity in read_entities_from_selection_set(selection_set) if isinstance(entity, Cogopoint)]
+
+def fetch_texts():
+    selection_set = initialize_selection_set()
+    return [entity for entity in read_entities_from_selection_set(selection_set) if isinstance(entity, Text)]

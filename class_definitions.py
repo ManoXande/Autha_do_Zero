@@ -1,4 +1,7 @@
-from common_utils import calculate_distance, calculate_azimuth, custom_round
+#class_definitions.py
+from common_utils import calculate_azimuth, calculate_distance
+from utils import associate_cogopoints_to_vertices
+
 
 class Cogopoint:
     def __init__(self, x, y, z, point_number, description):
@@ -48,14 +51,6 @@ class Polygon:
             end_vertex = self.vertices[(i + 1) % len(self.vertices)]
             edges.append(Edge(start_vertex, end_vertex))
         return edges
-
-    def calculate_centroid(self):
-        # Simplified method, to be refined
-        x_coords = [vertex.x for vertex in self.vertices]
-        y_coords = [vertex.y for vertex in self.vertices]
-        centroid_x = sum(x_coords) / len(x_coords)
-        centroid_y = sum(y_coords) / len(y_coords)
-        return centroid_x, centroid_y
 
 class Text:
     def __init__(self, x, y, content, text_type='txt'):

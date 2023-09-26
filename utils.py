@@ -1,9 +1,9 @@
+#utils.py
 import math
 from pyproj import Transformer
-from class_definitions import Vertex  
+from class_definitions import Vertex, Polygon, Text, Cogopoint  
 from configurations import ROUNDING_RULES, log  
-from common_utils import custom_round, calculate_distance, calculate_azimuth
-
+from debug_logs import log
 
 def custom_round(number, decimals):
     return round(number, decimals)
@@ -41,15 +41,19 @@ def reorder_polygon_vertices(polygon):
     polygon.edges = polygon.generate_edges()
     log(f"Reordered vertices for polygon {polygon.name}.")
 
+def calculate_centroid(self):
+    x_coords = [vertex.x for vertex in vertices]
+    y_coords = [vertex.y for vertex in vertices]
+    centroid_x = sum(x_coords) / len(x_coords)
+    centroid_y = sum(y_coords) / len(y_coords)
+    return centroid_x, centroid_y
 
 def associate_names_to_polygons(polygons, texts):
-    # Função para associar Texts aos Polygons com base na proximidade ao centróide
     for polygon in polygons:
         closest_text = min(texts, key=lambda txt: calculate_distance(polygon.centroid, txt))
         polygon.name = closest_text.content
 
 def identify_adjacent_polygons(polygons):
-    # Função para identificar polígonos adjacentes
     for polygon in polygons:
         for edge in polygon.edges:
             for other_polygon in polygons:
@@ -74,3 +78,4 @@ def associate_cogopoints_to_vertices(vertices, cogopoints):
         closest_cogopoint = min(cogopoints, key=lambda cp: calculate_distance(vertex, cp))
         vertex.cogopoint = closest_cogopoint
         vertex.id = vertex.generate_id()
+
