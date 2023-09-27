@@ -1,11 +1,7 @@
 #class_definitions.py
-import utils
+from utils import calculate_azimuth, calculate_distance, associate_cogopoints_to_vertices
 
-azimuth = utils.calculate_azimuth(...)
-distance = utils.calculate_distance(...)
-
-utils.associate_cogopoints_to_vertices(...)
-
+# Lazily import utils functions within classes
 class Cogopoint:
     def __init__(self, x, y, z, point_number, description):
         self.x = x
@@ -29,18 +25,20 @@ class Vertex:
 
 class Edge:
     def __init__(self, start_vertex, end_vertex):
-        self.start_vertex = start_vertex  # Vertex object with possible Cogopoint
-        self.end_vertex = end_vertex  # Vertex object with possible Cogopoint
+        from utils import calculate_distance, calculate_azimuth  # Lazy import
+        self.start_vertex = start_vertex
+        self.end_vertex = end_vertex
         self.distance = calculate_distance(self.start_vertex, self.end_vertex)
         self.azimuth = calculate_azimuth(self.start_vertex, self.end_vertex)
-        self.adjacent_polygon = None  # To be identified later
+        self.adjacent_polygon = None
 
 class Polygon:
     def __init__(self, vertices):
-        self.vertices = vertices  # List of Vertex objects
+        from utils import associate_cogopoints_to_vertices  # Lazy import
+        self.vertices = vertices
         associate_cogopoints_to_vertices(self.vertices)
         self.edges = self.generate_edges()
-        self.name = None  # To be associated later
+        self.name = None
         self.centroid = self.calculate_centroid()
         self.is_closed = self.check_if_closed()
 

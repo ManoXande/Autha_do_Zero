@@ -1,32 +1,25 @@
 #utils.py
 import math
 import pyproj
-import class_definitions
 import configurations
-import debug_logs
+from debug_logs import setup_custom_logger
 
-transformer = pyproj.Transformer(...)
-
-vertex = class_definitions.Vertex(...)
-polygon = class_definitions.Polygon(...)
-text = class_definitions.Text(...)
-cogopoint = class_definitions.Cogopoint(...)
-
+transformer = pyproj.Transformer.from_crs("EPSG:31982", "EPSG:31982", always_xy=True)
 rounding_rules = configurations.ROUNDING_RULES
-log_config = configurations.log  # se 'log' for uma variável ou função em 'configurations.py'
+log_config = configurations.log
 
-log_debug = debug_logs.log  # se 'log' for uma variável ou função em 'debug_logs.py'
-
+log_debug = setup_custom_logger('utils') 
 
 def custom_round(number, decimals):
     return round(number, decimals)
 
 def calculate_distance(start_vertex, end_vertex):
+    from class_definitions import Vertex  # Lazy import
     dx = end_vertex.x - start_vertex.x
     dy = end_vertex.y - start_vertex.y
     dz = end_vertex.z - start_vertex.z
     distance = math.sqrt(dx**2 + dy**2 + dz**2)
-    return round(distance, ROUNDING_RULES["distances"])  # Arredondamento diretamente aqui
+    return round(distance, rounding_rules["distances"]) # Arredondamento diretamente aqui
 
 def calculate_azimuth(start_vertex, end_vertex):
     dx = end_vertex.x - start_vertex.x
@@ -43,7 +36,8 @@ def azimuth_to_gms(azimuth):
     return degrees, minutes, round(seconds, ROUNDING_RULES["azimuths"])  # Arredondamento diretamente aqui
 
 def convert_coordinates(vertex, from_epsg, to_epsg):
-    transformer = Transformer.from_crs(from_epsg, to_epsg)
+    from class_definitions import Vertex  # Lazy import
+    transformer = pyproj.Transformer.from_crs(from_epsg, to_epsg, always_xy=True)
     x, y, z = transformer.transform(vertex.x, vertex.y, vertex.z)
     return Vertex(x, y, z)
 

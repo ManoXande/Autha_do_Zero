@@ -1,2 +1,39 @@
-git config --global user.email "cao.agrimensura@gmail.com"
-git config --global user.name "ManoXande"
+#autocad_interactions.py
+import pyautocad
+import class_definitions
+
+#class_definitions.py
+import utils
+
+#common_utils.py
+import math 
+import configurations 
+
+#configurations.py
+import locale
+
+#debug_logs.py
+import logging
+import sys
+
+#main.py
+import autocad_interactions
+import class_definitions
+import configurations
+import debug_logs
+import report_generation
+import utils
+
+#report_generation.py
+from jinja2 import Environment, FileSystemLoader
+import configurations
+import utils
+
+#utils.py
+import math
+import pyproj
+import class_definitions
+import configurations
+import debug_logs
+
+Please make a list of possible circular imports

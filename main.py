@@ -1,30 +1,10 @@
 #main.py
-import autocad_interactions
-import class_definitions
-import configurations
-import debug_logs
-import report_generation
-import utils
-
-texts = autocad_interactions.fetch_texts(...)
-polygons = autocad_interactions.fetch_polygons(...)
-cogopoints = autocad_interactions.fetch_cogopoints(...)
-
-polygon = class_definitions.Polygon(...)
-text = class_definitions.Text(...)
-cogopoint = class_definitions.Cogopoint(...)
-
-configurations.set_locale(...)
-configurations.set_rounding_rules(...)
-
-logger = debug_logs.setup_custom_logger(...)
-
-description = report_generation.generate_description(...)
-table = report_generation.generate_table(...)
-
-utils.associate_names_to_polygons(...)
-utils.user_select_polygons(...)
-utils.identify_adjacent_polygons(...)
+from autocad_interactions import fetch_texts, fetch_polygons, fetch_cogopoints
+from class_definitions import Polygon, Text, Cogopoint, Edge, Vertex
+from configurations import set_locale, set_rounding_rules
+from debug_logs import setup_custom_logger
+from report_generation import generate_description, generate_table
+from utils import associate_names_to_polygons, user_select_polygons, identify_adjacent_polygons
 
 # Setup logger
 def main():
