@@ -1,7 +1,10 @@
 #class_definitions.py
-from common_utils import calculate_azimuth, calculate_distance
-from utils import associate_cogopoints_to_vertices
+import utils
 
+azimuth = utils.calculate_azimuth(...)
+distance = utils.calculate_distance(...)
+
+utils.associate_cogopoints_to_vertices(...)
 
 class Cogopoint:
     def __init__(self, x, y, z, point_number, description):

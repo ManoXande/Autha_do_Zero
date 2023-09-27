@@ -1,9 +1,22 @@
 #utils.py
 import math
-from pyproj import Transformer
-from class_definitions import Vertex, Polygon, Text, Cogopoint  
-from configurations import ROUNDING_RULES, log  
-from debug_logs import log
+import pyproj
+import class_definitions
+import configurations
+import debug_logs
+
+transformer = pyproj.Transformer(...)
+
+vertex = class_definitions.Vertex(...)
+polygon = class_definitions.Polygon(...)
+text = class_definitions.Text(...)
+cogopoint = class_definitions.Cogopoint(...)
+
+rounding_rules = configurations.ROUNDING_RULES
+log_config = configurations.log  # se 'log' for uma variável ou função em 'configurations.py'
+
+log_debug = debug_logs.log  # se 'log' for uma variável ou função em 'debug_logs.py'
+
 
 def custom_round(number, decimals):
     return round(number, decimals)

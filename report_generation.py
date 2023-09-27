@@ -1,9 +1,16 @@
 #report_generation.py
 from jinja2 import Environment, FileSystemLoader
-from configurations import ROUNDING_RULES, DEFAULT_MEMORIAL_TEMPLATE, DEFAULT_TABLE_TEMPLATE
-from utils import azimuth_to_gms  
+import configurations
+import utils
 
 env = Environment(loader=FileSystemLoader('./templates'))
+
+rounding_rules = configurations.ROUNDING_RULES
+default_memorial_template = configurations.DEFAULT_MEMORIAL_TEMPLATE
+default_table_template = configurations.DEFAULT_TABLE_TEMPLATE
+
+azimuth_gms = utils.azimuth_to_gms(...)
+
 
 def load_template(template_type, template_name):
     return env.get_template(f"{template_name}_{template_type}.jinja2")

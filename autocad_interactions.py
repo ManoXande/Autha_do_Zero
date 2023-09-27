@@ -1,6 +1,15 @@
 #autocad_interactions.py
-from pyautocad import Autocad  # Assumindo que 'Autocad' é do pacote pyautocad
-from class_definitions import Cogopoint, Polygon, Text, Vertex  # Assumindo que estas classes estão definidas em 'class_definitions.py'
+import pyautocad
+import class_definitions
+
+acad = pyautocad.Autocad()
+
+# exemplo de uso das classes
+point = class_definitions.Cogopoint(...)
+polygon = class_definitions.Polygon(...)
+text = class_definitions.Text(...)
+vertex = class_definitions.Vertex(...)
+
 
 acad = Autocad()
 

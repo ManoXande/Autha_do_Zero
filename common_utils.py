@@ -1,7 +1,8 @@
 #common_utils.py
 import math 
-from configurations import ROUNDING_RULES  
+import configurations 
 
+rounding_rules = configurations.ROUNDING_RULES
 
 # Constantes para arredondamento (Estas podem ser importadas de um arquivo de configuração)
 ROUNDING_RULES = {
