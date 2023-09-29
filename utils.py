@@ -3,6 +3,11 @@ import math
 import pyproj
 import configurations
 from debug_logs import setup_custom_logger
+from typing import List
+import logging
+from class_definitions import Vertex  
+
+logger = logging.getLogger(__name__)
 
 transformer = pyproj.Transformer.from_crs("EPSG:31982", "EPSG:31982", always_xy=True)
 rounding_rules = configurations.ROUNDING_RULES
@@ -10,16 +15,28 @@ log_config = configurations.log
 
 log_debug = setup_custom_logger('utils') 
 
+rounding_rules = {"distances": 2} 
+
 def custom_round(number, decimals):
     return round(number, decimals)
 
-def calculate_distance(start_vertex, end_vertex):
-    from class_definitions import Vertex  # Lazy import
-    dx = end_vertex.x - start_vertex.x
-    dy = end_vertex.y - start_vertex.y
-    dz = end_vertex.z - start_vertex.z
-    distance = math.sqrt(dx**2 + dy**2 + dz**2)
-    return round(distance, rounding_rules["distances"]) # Arredondamento diretamente aqui
+def calculate_distance(start_vertex: Vertex, end_vertex: Vertex):
+    try:
+        if not isinstance(start_vertex, Vertex) or not isinstance(end_vertex, Vertex):
+            logger.error("Os argumentos devem ser instâncias da classe Vertex.")
+            return None
+
+        dx = end_vertex.x - start_vertex.x
+        dy = end_vertex.y - start_vertex.y
+        dz = end_vertex.z - start_vertex.z
+
+        distance = math.sqrt(dx**2 + dy**2 + dz**2)
+
+        return round(distance, rounding_rules["distances"])
+
+    except Exception as e:
+        logger.error(f"Um erro ocorreu durante o cálculo da distância: {e}")
+        return None
 
 def calculate_azimuth(start_vertex, end_vertex):
     dx = end_vertex.x - start_vertex.x
@@ -80,9 +97,21 @@ def user_select_polygons(polygons):
     selected_polygons = [polygons[int(i)-1] for i in selected_indices]
     return selected_polygons
 
-def associate_cogopoints_to_vertices(vertices, cogopoints):
+def associate_cogopoints_to_vertices(vertices: List, cogopoints: List):
+    if not isinstance(vertices, list) or not isinstance(cogopoints, list):
+        logger.error("Invalid argument type. Both vertices and cogopoints should be lists.")
+        return
+
+    if not vertices or not cogopoints:
+        logger.warning("One or both of the lists are empty. Skipping association.")
+        return
+
     for vertex in vertices:
-        closest_cogopoint = min(cogopoints, key=lambda cp: calculate_distance(vertex, cp))
-        vertex.cogopoint = closest_cogopoint
-        vertex.id = vertex.generate_id()
+        try:
+            closest_cogopoint = min(cogopoints, key=lambda cp: calculate_distance(vertex, cp))
+            vertex.cogopoint = closest_cogopoint
+            vertex.id = vertex.generate_id()
+        except Exception as e:
+            logger.error(f"An error occurred while associating vertex and cogopoint: {e}")
+
 

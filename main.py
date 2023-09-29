@@ -1,54 +1,82 @@
-#main.py
-from autocad_interactions import fetch_texts, fetch_polygons, fetch_cogopoints
+from autocad_interactions import initialize_selection_set, extract_coordinates
 from class_definitions import Polygon, Text, Cogopoint, Edge, Vertex
 from configurations import set_locale, set_rounding_rules
 from debug_logs import setup_custom_logger
 from report_generation import generate_description, generate_table
 from utils import associate_names_to_polygons, user_select_polygons, identify_adjacent_polygons
 
-# Setup logger
 def main():
+    # Initialize Logger and Environment
     logger = setup_custom_logger('main')
+    
     try:
-        # Initialize
         logger.info("Initializing...")
         set_locale('pt_BR')
         set_rounding_rules()
         
-        # Fetching data from AutoCAD
-        logger.info("Fetching data from AutoCAD...")
-        polygons_data = fetch_polygons()
-        if not polygons_data:
-            logger.error("No polygon data found. Exiting.")
-            return
+        # Initialize Selection Set and Fetch Data
+        logger.info("Initializing selection set...")
+        selection_set = initialize_selection_set()
         
-        texts_data = fetch_texts()
-        cogopoints_data = fetch_cogopoints()
+        logger.info("Extracting entities...")
+        polygons = []
+        texts = []
+        cogopoints = []
         
-        # Create Polygon, Text, and Cogopoint objects
-        polygons = [Polygon(data) for data in polygons_data]
-        texts = [Text(data) for data in texts_data]
-        cogopoints = [Cogopoint(data) for data in cogopoints_data]
+        if selection_set is not None:
+            for entity in selection_set:
+                entity_data = extract_coordinates(entity)
+                if entity_data:
+                    print(f"Debug: Entity data is {entity_data}")  # Debugging line
+                    
+                    if entity_data['Type'] == 'Polyline':
+                        polygons.append(Polygon(entity_data))
+                    elif entity_data['Type'] == 'CogoPoint':
+                        cogopoint_data = {
+                            'x': entity_data.get('Easting'),
+                            'y': entity_data.get('Northing'),
+                            'z': entity_data.get('Elevation'),
+                            'point_number': entity_data.get('Number'),
+                            'description': entity_data.get('RawDescription'),
+                        }
+                        cogopoints.append(Cogopoint(**cogopoint_data))
+                    elif entity_data['Type'] == 'Text':
+                        entity_data_filtered = {key: entity_data[key] for key in entity_data if key != 'Type'}
+                        texts.append(Text(**entity_data_filtered))
+
+        if polygons and cogopoints:
+            print(f"Debug: Polygons data is {polygons}")  # Debugging line
+            print(f"Debug: Cogopoints data is {cogopoints}")  # Debugging line
+            associate_cogopoints_to_vertices(polygons, cogopoints)
+        else:
+            logger.warning("Skipping associate_cogopoints_to_vertices due to missing data.")
         
-        # Associate names and Cogopoints to polygons
+        logger.info("Associating names and Cogopoints to polygons...")
         associate_names_to_polygons(polygons, texts)
         
-        # Allow the user to select polygons
+        logger.info("Allowing user to select polygons...")
         selected_polygons = user_select_polygons(polygons)
         
-        # Identify adjacent polygons
+        logger.info("Identifying adjacent polygons...")
+        print(f"Debug: Selected Polygons data is {selected_polygons}")
         identify_adjacent_polygons(selected_polygons)
         
-        # Generate reports
+        logger.info("Generating reports...")
         for polygon in selected_polygons:
             desc = generate_description(polygon, 'EPSG:31982')
             table = generate_table(polygon)
-            # Save or print the generated reports (desc and table)
+            
+            print("Generated Memorial:")
+            print(desc)
+            print("Generated Table:")
+            print(table)
         
         logger.info("Process completed.")
         
-    except Exception as e:
+    except Exception as e:  # Now this is correctly placed
         logger.error(f"An unexpected error occurred: {e}")
 
 if __name__ == "__main__":
     main()
+
+  
